@@ -32,18 +32,25 @@ function displayBudgetInfo() {
     if (!budgetInfo) return;
 
     const today = new Date().toISOString().split('T')[0];
-    let remainingBudget = budgetInfo.dailyBudget;
+    let remainingBudget = parseFloat(budgetInfo.dailyBudget); // Ensure dailyBudget is a number
+
     // Calculate remaining budget considering today's date
     Object.keys(budgetInfo.expenses).forEach(date => {
         if (date === today) {
-            remainingBudget -= budgetInfo.expenses[date];
+            // Ensure each expense is treated as a number
+            remainingBudget -= parseFloat(budgetInfo.expenses[date]);
         }
     });
 
-    document.getElementById('budget-info').innerHTML = `
-        <p>Daily Budget: ${budgetInfo.dailyBudget}</p>
-        <p>Today's Remaining Budget: ${remainingBudget.toFixed(2)}</p>
-    `;
+    // Ensure remainingBudget is a number before calling toFixed
+    if (!isNaN(remainingBudget)) {
+        document.getElementById('budget-info').innerHTML = `
+            <p>Daily Budget: ${parseFloat(budgetInfo.dailyBudget).toFixed(2)}</p>
+            <p>Today's Remaining Budget: ${remainingBudget.toFixed(2)}</p>
+        `;
+    } else {
+        document.getElementById('budget-info').innerHTML = 'Error calculating remaining budget.';
+    }
 }
 
 // Display budget info on load
