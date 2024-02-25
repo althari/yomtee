@@ -68,9 +68,18 @@
     <script>
         function setupBudget() {
             const dailyBudget = document.getElementById('daily-budget').value;
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
+            const startDateInput = document.getElementById('start-date').value;
+            const endDateInput = document.getElementById('end-date').value;
 
+            // Convert startDate and endDate to DD-MM-YYYY format
+            const convertDateToDDMMYYYY = (dateString) => {
+                const dateParts = dateString.split('-'); // Split YYYY-MM-DD
+                return `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`; // Reorder to DD-MM-YYYY
+            };
+
+            const startDate = convertDateToDDMMYYYY(startDateInput);
+            const endDate = convertDateToDDMMYYYY(endDateInput);
+            
             if (!dailyBudget || !startDate || !endDate) {
                 alert('Please fill in all fields.');
                 return;
@@ -114,7 +123,7 @@
                 return;
             }
             const budgetInfo = JSON.parse(localStorage.getItem('budgetInfo'));
-            budgetInfo.balance = budgetInfo.balance + parseFloat(amountToAdd);
+            budgetInfo.balance = parseFloat(budgetInfo.balance) + parseFloat(amountToAdd);
             localStorage.setItem('budgetInfo', JSON.stringify(budgetInfo));
             displayBudgetInfo();
             document.getElementById('amount').value = '';
@@ -167,7 +176,7 @@
                 <br><small>Tomorrow will add the daily budget</small></p>
             `;
             
-            if(today > budgetInfo.endDate) {
+            if(getTodayDate() > budgetInfo.endDate) {
                 document.getElementById('expense-tracker').style.display = 'none';
             }
 
@@ -211,8 +220,21 @@
         
         function getToday(){
             // return '2024-02-28';
-            return new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+            const offset = new Date().getTimezoneOffset();
+            const localDate = new Date(new Date().getTime() - (offset * 60 * 1000));
+            // Format YYYY-MM-DD
+            
+            const day = ('0' + localDate.getDate()).slice(-2); // Add leading zero if necessary
+            const month = ('0' + (localDate.getMonth() + 1)).slice(-2); // Months are 0-based
+            const year = localDate.getFullYear();
+            return `${day}-${month}-${year}`;
         }
+        
+        function getTodayDate() {
+                // return '2024-02-28';
+                const offset = new Date().getTimezoneOffset();
+                return new Date(new Date().getTime() - (offset * 60 * 1000)).toISOString().split('T')[0]; // Format YYYY-MM-DD
+            }
 
         document.addEventListener('DOMContentLoaded', initApp);
 
