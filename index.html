@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Daily Budget Tracker</title>
     <style>
         body {
@@ -46,10 +46,10 @@
 
 <body>
     <div id="budget-setup">
-        <input type="number" id="daily-budget" placeholder="Enter Daily Budget">
-        <input type="date" id="start-date">
-        <input type="date" id="end-date">
-        <button onclick="setupBudget()">Set Budget</button>
+        <div><input type="number" id="daily-budget" placeholder="Daily Budget Amount"></div>
+        <div>Start Date<br><input type="date" id="start-date"></div>
+        <div>End Date<br><input type="date" id="end-date"></div>
+        <div><button onclick="setupBudget()">Set Budget</button></div>
     </div>
 
     <div id="budget-info"></div>
