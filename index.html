@@ -1,26 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Budget Tracker</title>
-    <link rel="stylesheet" href="style.css"> <!-- Link to your CSS file -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+
+        input,
+        button {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            cursor: pointer;
+            background-color: #5cb85c;
+            color: white;
+        }
+
+        #budget-info {
+            margin-top: 20px;
+        }
+
+        .dim-btn {
+            background: transparent;
+            color: gray;
+            font-size: 9pt;
+        }
+
+        .red-btn {
+            background: red;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Daily Budget Tracker</h1>
     <div id="budget-setup">
         <input type="number" id="daily-budget" placeholder="Enter Daily Budget">
         <input type="date" id="start-date">
         <input type="date" id="end-date">
         <button onclick="setupBudget()">Set Budget</button>
     </div>
-    <div id="expense-tracker" style="display: none;"> <!-- Initially hidden -->
-        <input type="number" id="expense-amount" placeholder="Enter Expense Amount">
-        <button onclick="addExpense()">Add Expense</button>
-        <button onclick="resetBudget()">Reset Budget</button> <!-- Reset button -->
-    </div>
+
     <div id="budget-info"></div>
 
-    <script src="app.js?v2"></script> <!-- Link to your JS file -->
+    <div id="daily-tracker"></div>
+
+    <div id="expense-tracker" style="display: none;"> <!-- Initially hidden -->
+        <input type="number" id="amount" placeholder="Amount">
+        <br><button class="red-btn" onclick="addExpense()">Spend From Budget (-)</button>
+        <br><button onclick="addToBudget()">Add to Budget (+)</button>
+    </div>
+    
+    
+    <div id="reset-budget"><button class="dim-btn" onclick="resetBudget()">Reset All Data</button></div>
+
+    <script>
+        function setupBudget() {
+            const dailyBudget = document.getElementById('daily-budget').value;
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+
+            if (!dailyBudget || !startDate || !endDate) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            const budgetInfo = {
+                dailyBudget,
+                startDate,
+                endDate
+            };
+
+
+            const today = getToday();
+            budgetInfo.lastUpdate = today;
+            budgetInfo.balance = dailyBudget;
+
+            localStorage.setItem('budgetInfo', JSON.stringify(budgetInfo));
+            displayBudgetInfo();
+            document.getElementById('budget-setup').style.display = 'none';
+            document.getElementById('reset-budget').style.display = 'block';
+            document.getElementById('expense-tracker').style.display = 'block';
+        }
+
+        function addExpense() {
+            const expenseAmount = document.getElementById('amount').value;
+            if (!expenseAmount) {
+                alert('Please enter an expense amount.');
+                return;
+            }
+            const budgetInfo = JSON.parse(localStorage.getItem('budgetInfo'));
+            budgetInfo.balance = budgetInfo.balance - parseFloat(expenseAmount);
+            localStorage.setItem('budgetInfo', JSON.stringify(budgetInfo));
+            displayBudgetInfo();
+            document.getElementById('amount').value = '';
+        }
+
+        function addToBudget() {
+            const amountToAdd = parseFloat(document.getElementById('amount').value); // Get the amount to add
+            if (!amountToAdd) {
+                alert('Please enter an amount to add to the budget.');
+                return;
+            }
+            const budgetInfo = JSON.parse(localStorage.getItem('budgetInfo'));
+            budgetInfo.balance = budgetInfo.balance + parseFloat(amountToAdd);
+            localStorage.setItem('budgetInfo', JSON.stringify(budgetInfo));
+            displayBudgetInfo();
+            document.getElementById('amount').value = '';
+        }
+
+        function resetBudget() {
+            if (!confirm('Are you sure?? (you will reset all your data)')) {
+                return;
+            }
+            localStorage.removeItem('budgetInfo');
+            document.getElementById('budget-setup').style.display = 'block';
+            document.getElementById('reset-budget').style.display = 'none';
+            document.getElementById('expense-tracker').style.display = 'none';
+            document.getElementById('budget-info').innerHTML = '';
+            document.getElementById('daily-tracker').innerHTML = '';
+            document.getElementById('daily-budget').value = '';
+            document.getElementById('start-date').value = '';
+            document.getElementById('end-date').value = '';
+        }
+
+        function displayBudgetInfo() {
+            const budgetInfo = JSON.parse(localStorage.getItem('budgetInfo'));
+            if (!budgetInfo) return;
+
+            const today = getToday();
+
+            const now = new Date(); // Get the current date and time
+            // Format the time in HH:MM AM/PM format
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const formattedHours = hours % 12 || 12; // Convert 24h to 12h format and adjust 0 to 12
+            const formattedMinutes = minutes < 10 ? '0' + minutes : minutes; // Add leading zero to minutes if needed
+            const time = `${formattedHours}:${formattedMinutes} ${ampm}`;
+
+
+            document.getElementById('budget-info').innerHTML = `
+                <h4>Spending Plan</h4>
+                <p>Start: ${budgetInfo.startDate}
+                    <br>End: ${budgetInfo.endDate}
+                    <br>Daily Budget: ${parseFloat(budgetInfo.dailyBudget).toFixed(2)}
+                    </p>
+            `;
+            
+            document.getElementById('daily-tracker').innerHTML = `
+                <h4>Daily Tracker</h4>
+                        <p>Today: ${today}
+                            <br>Time: ${time}
+                <br>Available Budget: ${parseFloat(budgetInfo.balance).toFixed(2)}
+                <br><small>Tomorrow will add the daily budget</small></p>
+            `;
+            
+            if(today > budgetInfo.endDate) {
+                document.getElementById('expense-tracker').style.display = 'none';
+            }
+
+        }
+
+        function updateDailyBudgetIfNeeded() {
+            const today = getToday();
+            const budgetInfo = JSON.parse(localStorage.getItem('budgetInfo'));
+            if (!budgetInfo) return;
+
+            const lastUpdate = budgetInfo.lastUpdate;
+            if (today > lastUpdate) {
+                // Calculate the number of days since the last update
+                const daysDiff = Math.floor((new Date(today) - new Date(lastUpdate)) / (1000 * 60 * 60 * 24));
+
+                // Add the daily budget for each day that has passed since the last update
+                budgetInfo.balance += daysDiff * parseFloat(budgetInfo.dailyBudget);
+
+                // Update the lastUpdate date to today
+                budgetInfo.lastUpdate = today;
+
+                // Save the updated budget info
+                localStorage.setItem('budgetInfo', JSON.stringify(budgetInfo));
+            }
+        }
+
+        function initApp() {
+            updateDailyBudgetIfNeeded();
+            const budgetInfo = JSON.parse(localStorage.getItem('budgetInfo'));
+            if (budgetInfo) {
+                document.getElementById('budget-setup').style.display = 'none';
+                document.getElementById('reset-budget').style.display = 'block';
+                document.getElementById('expense-tracker').style.display = 'block';
+            } else {
+                document.getElementById('budget-setup').style.display = 'block';
+                document.getElementById('reset-budget').style.display = 'none';
+                document.getElementById('expense-tracker').style.display = 'none';
+            }
+            displayBudgetInfo();
+        }
+        
+        function getToday(){
+            // return '2024-02-28';
+            return new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+
+    </script>
 </body>
+
 </html>
