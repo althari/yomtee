@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Budget Tracker</title>
+    <link rel="stylesheet" href="style.css"> <!-- Link to your CSS file -->
+</head>
+<body>
+    <h1>Daily Budget Tracker</h1>
+    <div id="budget-setup">
+        <input type="number" id="daily-budget" placeholder="Enter Daily Budget">
+        <input type="date" id="start-date">
+        <input type="date" id="end-date">
+        <button onclick="setupBudget()">Set Budget</button>
+    </div>
+    <div id="expense-tracker">
+        <input type="number" id="expense-amount" placeholder="Enter Expense Amount">
+        <button onclick="addExpense()">Add Expense</button>
+    </div>
+    <div id="budget-info"></div>
+
+    <script src="app.js"></script> <!-- Link to your JS file -->
+</body>
+</html>
