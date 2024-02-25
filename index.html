@@ -14,12 +14,13 @@
         <input type="date" id="end-date">
         <button onclick="setupBudget()">Set Budget</button>
     </div>
-    <div id="expense-tracker">
+    <div id="expense-tracker" style="display: none;"> <!-- Initially hidden -->
         <input type="number" id="expense-amount" placeholder="Enter Expense Amount">
         <button onclick="addExpense()">Add Expense</button>
+        <button onclick="resetBudget()">Reset Budget</button> <!-- Reset button -->
     </div>
     <div id="budget-info"></div>
 
-    <script src="app.js?v1"></script> <!-- Link to your JS file -->
+    <script src="app.js?v2"></script> <!-- Link to your JS file -->
 </body>
 </html>
